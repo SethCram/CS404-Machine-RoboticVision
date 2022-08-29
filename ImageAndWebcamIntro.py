@@ -61,34 +61,31 @@ cv.destroyAllWindows()
 # col (x), row (y), channel (z)
 #BGR Color Space
 # can access pixel using arr notation
-print(img[40, 40, 0]) #prints out intensity
+print(img[40, 40, 0]) #prints out intensity, can access image as a 3d arr
 print(img.shape) #may use this to do some math, image dimensions
 print(img.dtype)
 
 #can index image
-img = img[250:500, 400:700]
-key = ord('r')
-while key != ord('c'):
-    cv.imshow("OpenCV Picture", img)
-    key = cv.waitKey()
-cv.destroyAllWindows()
+showImage( img[250:500, 400:700] )
 
 #padding an image by addding border
 # top, bot, left, right (border width)
 border_size = 10
 #color if border is const
 border_color = [255, 0, 0]
-# copy border pixels on edges to make new border image (REPLICATE = extending picels at end of border) ( or wrap to get pixels from other edge)
-img = cv.copyMakeBorder(img, border_size, border_size, border_size, border_size, cv.BORDER_CONSTANT, value = border_color) #border reflect (or reflect 101) (mirror pixels in)
-key = ord('r')
-while key != ord('c'):
-    cv.imshow("OpenCV Picture", img)
-    key = cv.waitKey()
-cv.destroyAllWindows()
+# copy border pixels on edges to make new border image 
+#  (REPLICATE = extending picels at end of border) 
+#  ( or wrap to get pixels from other edge)
+#border reflect (or reflect 101) (mirror pixels in)
+borderedImg = cv.copyMakeBorder(img, border_size, border_size, 
+                border_size, border_size, cv.BORDER_CONSTANT, 
+                value = border_color) 
+
+showImage(borderedImg)
 
 #WRITE OUT AN IMAGE TO SAVE IT (need to specify image type)
-newFileName = "ZoomedInWithBorder_MeAndEmoly.jpg"
-cv.imwrite(newFileName, img) 
+newFileName = "Border_MeAndEmoly.jpg"
+cv.imwrite(newFileName, borderedImg) 
 
 #WRITE TEXT ON IMAGE
 # to classify something
@@ -97,9 +94,14 @@ def writeText(img, text, origin = (50,50), font = cv.FONT_HERSHEY_SIMPLEX, fontS
     newImg = cv.putText(img, text, origin, font, fontScale, color, thickness, line_type)
     return newImg    
 
-writeText(img, "This is a picture")
-key = ord('r')
-while key != ord('c'):
-    cv.imshow("OpenCV Picture", img)
-    key = cv.waitKey()
-cv.destroyAllWindows()
+imgCopy = img
+writeText(imgCopy, "This is a picture")
+showImage(imgCopy)
+
+#Draw a rectangle
+imgRect = cv.rectangle(img, (0,0), (600,200), (255,0,0), 1)
+showImage(imgRect)
+
+#Draw a circle
+imgCirc = cv.circle(img, (600,320), 200, (0,255,0), 1)
+showImage(imgCirc)
