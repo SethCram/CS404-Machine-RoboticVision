@@ -7,43 +7,54 @@ img = cv.imread('MeAndEmoly.jpg')
 rows, cols, channels = img.shape
 
 #Transformation
-M = np.float32([1, 0, 100], [0, 1, 50])
+M = np.float32([[1, 0, 100], [0, 1, 50]])
 #M 
 # 1 0 100
 # 0 1 50
-img = cv.warpAffine(img, M, (cols, rows))
-showImage(img)
+imgTranslated = cv.warpAffine(img, M, (cols, rows))
+showImage(imgTranslated)
 
 #Rotation
-M = cv.getRotationMatrix2D((cols-1/2.0, rows-1/2.0), 90, 1)
-img = cv.warpAffine(img, M, (cols, rows))
-showImage(img)
+M = cv.getRotationMatrix2D(((cols-1)/2.0, (rows-1)/2.0), 90, 1)
+imgRotated = cv.warpAffine(img, M, (cols, rows))
+showImage(imgRotated)
 
-#RESIZE (common w/ passing to AI models)
-img = cv.resize(img.copy(), int(img.shape[1]*1.5), int(img.shape[0]*1.5), interpolation=cv.INTER_NEAREST )
-img = cv.resize(img.copy(), int(img.shape[1]*1.5), int(img.shape[0]*1.5), interpolation=cv.INTER_CUBIC )
-img = cv.resize(img.copy(), int(img.shape[1]*1.5), int(img.shape[0]*1.5), interpolation=cv.INTER_AREA )
+#RESIZE/SCALING (common w/ passing to AI models)
 
-img = cv.resize(img.copy(), None, fx=0.1, fy=0.1, interpolation=cv.INTER_CUBIC)
+#enlarge
+#imgResized = cv.resize(img.copy(), (int(img.shape[1]*1.5), int(img.shape[0]*1.5)), interpolation=cv.INTER_NEAREST )
+#imgResized = cv.resize(img.copy(), (int(img.shape[1]*1.5), int(img.shape[0]*1.5)), interpolation=cv.INTER_LINEAR )
+#imgResized = cv.resize(img.copy(), (int(img.shape[1]*1.5), int(img.shape[0]*1.5)), interpolation=cv.INTER_CUBIC )
+imgResized = cv.resize(img.copy(), (int(img.shape[1]*1.5), int(img.shape[0]*1.5)), interpolation=cv.INTER_AREA )
+
+#shrink
+#imgResized = cv.resize(img.copy(), None, fx=0.1, fy=0.1, interpolation=cv.INTER_CUBIC)
+
+showImage(imgResized)
 
 #General Affine Tranformation (useful for general rot)
 first_pnts = np.float32([ [50,50], [200,50], [50,200] ])
 nxt_pnts = np.float32([ [10,100], [200,50], [100,250] ])
 M = cv.getAffineTransform(first_pnts, nxt_pnts) #openCV figure out transform for u if dont want specific transform
-img = cv.warpAffine(img, M, (cols, rows)) 
+imgRotated = cv.warpAffine(img, M, (cols, rows)) 
+showImage(imgRotated)
 
 #Perspective Transform
 first_pnts = np.float32([ [50,50], [400,50], [50,400], [400,400] ]) #uses 4 bc all 4 corners?
 nxt_pnts = np.float32([ [50,0], [600,0], [50,50], [600,600] ])
 M = cv.getPerspectiveTransform(first_pnts, nxt_pnts)
-img = cv.warpPerspective(img, M, (cols, rows))
+imgPerspective = cv.warpPerspective(img, M, (cols, rows))
+showImage(imgPerspective)
 
 #COLOR CHANNELS
 b, g, r = cv.split(img)
-#showImage(g, frames=1000)
-showImage(r, frames=1000)
+showImage(b)
+showImage(g)
+showImage(r)
 
-b = img[:, :, 2] = 0 #numpy faster (zeros out index 2 so red?)
+# (possible not working properly) (if working properly only supposed to show 1 pixel??)
+blue = img[:, :, 2] = 0 #numpy faster (zeros out index 2 so no red?)
+showImage(blue)
 
 #Brightness/Contrast
 #output_pixel = (input_pixel * alpha ) + beta
@@ -52,15 +63,20 @@ b = img[:, :, 2] = 0 #numpy faster (zeros out index 2 so red?)
 alpha = 2.2
 beta = 20.0
 
-#tranform pixel by pixel (takes long time) (brightens picture)
+imgBright = np.empty(img.shape)
+
+#transform pixel by pixel (takes long time) (brightens picture)
 for row_pixel in range(0, img.shape[0]):
     for col_pixel in range(0, img.shape[1]):
         for channel_pixel in range(0, img.shape[2]):
-            img[row_pixel][col_pixel][channel_pixel] = np.clip( img[row_pixel][col_pixel][channel_pixel]*alpha + beta, 0, 255 )
+            imgBright[row_pixel][col_pixel][channel_pixel] = np.clip( img[row_pixel][col_pixel][channel_pixel]*alpha + beta, 0, 255 )
 #if no clipping, vals fall below 0 and above 255
 
+showImage(imgBright)
+
 #brighten using funct
-img = cv.convertScaleAbs(img, alpha=alpha, beta=beta)
+imgBright = cv.convertScaleAbs(img, alpha=alpha, beta=beta)
+showImage(imgBright)
 
 #Gamma Correction
 #gamma = 1.0
@@ -68,8 +84,7 @@ img = cv.convertScaleAbs(img, alpha=alpha, beta=beta)
 gamma = 5
 look_up = np.empty((1, 256), np.uint8)
 for  i in range(256):
-    look_up[0, i] = np.clip(pow(i/255.0, gamma)*255.0, 0, 255)
-    
-img = cv.LUT(img, look_up)
+    look_up[0, i] = np.clip(pow(i/255.0, gamma)*255.0, 0, 255) 
+imgGammafied = cv.LUT(img, look_up)
 
-showImage(img)
+showImage(imgGammafied)
