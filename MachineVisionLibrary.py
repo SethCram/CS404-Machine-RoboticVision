@@ -27,6 +27,6 @@ def writeText(img, text, origin = (50,50), font = cv.FONT_HERSHEY_SIMPLEX, fontS
     newImg = cv.putText(img, text, origin, font, fontScale, color, thickness, line_type)
     return newImg
 
-def saveImage(img, newPicName = "newPic.jpg" ):
+def saveImage(img, newPicName = "newPic", extension = ".jpg" ):
     #WRITE OUT AN IMAGE TO SAVE IT (need to specify image type)
-    cv.imwrite(newPicName, img) 
+    cv.imwrite(newPicName, img + extension) 
