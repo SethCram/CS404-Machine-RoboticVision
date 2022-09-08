@@ -11,6 +11,9 @@ from MachineVisionLibrary import *
 
 decision = input("Do you need to take more pictures for calibration?(y/n)")
 
+#glob found images
+images = glob.glob('*.jpg')
+
 #if needa take more pics
 if(decision == "y"):
 
@@ -25,8 +28,12 @@ if(decision == "y"):
     # displays the camera feed in a cv2.namedWindow and will take a snapshot when you hit SPACE. It will also quit if you hit ESC.
 
     cv.namedWindow("test")
-
-    img_counter = 0
+    
+    #don't accidently overwrite old images by giving new ones the same names
+    if( images != None ):
+        img_counter = len(images)
+    else:
+        img_counter = 0
 
     while True:
         ret, frame = webcam.read()
@@ -59,6 +66,8 @@ if(decision == "y"):
     webcam.release()
     cv.destroyAllWindows()
 
+# rest mainly from https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html unless otherwise specified
+
 # termination criteria
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
@@ -72,7 +81,6 @@ calibrationDict = { }
 # Arrays to store object points and image points from all the images.
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
-images = glob.glob('*.jpg')
 
 for fname in images:
     img = cv.imread(fname)
