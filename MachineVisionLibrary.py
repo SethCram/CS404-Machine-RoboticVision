@@ -19,3 +19,14 @@ def showImage(image, windowName = "OpenCV Picture", closeKey = 'c'):
     
     #destroy windows
     cv.destroyAllWindows()
+    
+#WRITE TEXT ON IMAGE
+# to classify something
+# for debugging if motion detected
+def writeText(img, text, origin = (50,50), font = cv.FONT_HERSHEY_SIMPLEX, fontScale = 1, color = (255,0,0), thickness = 2, line_type = cv.LINE_AA):
+    newImg = cv.putText(img, text, origin, font, fontScale, color, thickness, line_type)
+    return newImg
+
+def saveImage(img, newPicName = "newPic.jpg" ):
+    #WRITE OUT AN IMAGE TO SAVE IT (need to specify image type)
+    cv.imwrite(newPicName, img) 
