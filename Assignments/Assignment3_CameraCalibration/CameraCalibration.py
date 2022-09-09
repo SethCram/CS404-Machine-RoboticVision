@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import cv2 as cv
 import glob
@@ -11,8 +12,11 @@ from MachineVisionLibrary import *
 
 decision = input("Do you need to take more pictures for calibration?(y/n)")
 
+#dir files saved to
+saveDir = "Assignments/Assignment3_CameraCalibration/"
+
 #glob found images
-images = glob.glob('*.jpg')
+images = glob.glob(saveDir + '*.jpg')
 
 #if needa take more pics
 if(decision == "y"):
@@ -52,7 +56,7 @@ if(decision == "y"):
             
             #SAVE IMAGE
             img_name = "opencv_frame_{}.jpg".format(img_counter)
-            cv.imwrite(img_name, frame)
+            cv.imwrite(saveDir+img_name, frame)
             print("{} written!".format(img_name))
             img_counter += 1
             
@@ -60,11 +64,14 @@ if(decision == "y"):
             #add curr still to images
             #images.append(frame)
             #img_name = "opencv_frame_{}.png".format(img_counter)
-            #print("{} saved for calibration!".format(img_name))
+            #print("{} cached for calibration!".format(img_name))
             #img_counter += 1
         
     webcam.release()
     cv.destroyAllWindows()
+    
+    #glob prev found images w/ new ones too
+    images = glob.glob(saveDir + '*.jpg')
 
 # rest mainly from https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html unless otherwise specified
 
@@ -82,6 +89,7 @@ calibrationDict = { }
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
 
+#for fname in images:
 for fname in images:
     img = cv.imread(fname)
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -94,9 +102,18 @@ for fname in images:
         imgpoints.append(corners)
         # Draw and display the corners
         cv.drawChessboardCorners(img, (7,6), corners2, ret)
-        cv.imshow('img', img)
-        cv.waitKey(500)
+        showImage(img)
+        
+        #SAVE IMAGE
+        #img_name = "valid_frame_{}.jpg".format(patternsCaptured)
+        #cv.imwrite(saveDir+img_name, frame)
+        #print("{} written!".format(img_name))
+        
         patternsCaptured += 1
+    #if chess board corners not found
+    else:
+        #remove saved file
+        os.remove(fname) 
 
 cv.destroyAllWindows()
 
@@ -105,7 +122,7 @@ print("{} patterns captured for calibration. Should be atleast 10.".format(patte
 ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
 #save intrinsic matrix parameters and the distortion coefficients 
-calibrationDict[mtx] = dist
+calibrationDict[dist] = mtx
 
 jsonFileName = 'CamCalibration.json'
 
