@@ -136,8 +136,8 @@ ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.sha
 #}
 
 calibrationDict = {}
-for distCoeff, intrinsicMatrix in zip(dist, mtx):
-    for distCoeffElly, intrinsicMatrixElly in zip(distCoeff, intrinsicMatrix):
+for distCoeff, intrinsicMatrix in zip(dist, mtx, strict=True):
+    for distCoeffElly, intrinsicMatrixElly in zip(distCoeff, intrinsicMatrix, strict=True):
         calibrationDict[distCoeffElly] = intrinsicMatrixElly
 
 jsonFileName = 'CamCalibration.json'
@@ -155,18 +155,24 @@ with open(jsonFileName, 'r') as f:
 for i in returnedCalibrationDict:
     print(i)
     
+retdDist = np.empty(len(returnedCalibrationDict))
+retdMtx = np.empty(len(returnedCalibrationDict))
+
+i = 0
+    
 #take params back from retd dict
-#for distCoeffElly, intrinsicMatrixElly in enumerate(returnedCalibrationDict):
-#    retdDist, retdMtx = distCoeffElly, intrinsicMatrixElly
+for distCoeffElly, intrinsicMatrixElly in enumerate(returnedCalibrationDict):
+    retdDist[i], retdMtx[i] = distCoeffElly, intrinsicMatrixElly
+    i += 1
 
 #Undistort another image from same cam *with json file params*
 
 img = cv.imread(saveDir + 'DistortedImage.png')
 h,  w = img.shape[:2]
-newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
+newcameramtx, roi = cv.getOptimalNewCameraMatrix(retdMtx, retdDist, (w,h), 1, (w,h))
 
 # undistort
-dst = cv.undistort(img, mtx, dist, None, newcameramtx)
+dst = cv.undistort(img, retdMtx, retdDist, None, newcameramtx)
 
 # crop the image
 x, y, w, h = roi
