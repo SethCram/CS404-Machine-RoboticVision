@@ -1,3 +1,9 @@
+"""
+Author: Seth Cram
+Class: CS404 - Machine and Robotic Vision
+Assignment 3 - Camera Calibration
+"""
+
 import os
 import numpy as np
 import cv2 as cv

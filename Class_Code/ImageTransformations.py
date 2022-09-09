@@ -1,6 +1,11 @@
-from random import betavariate
+#!/usr/bin/env python3
 import numpy as np
 import cv2 as cv
+import sys
+
+#used https://stackoverflow.com/a/4383597/13046931 to import lib
+# caution: path[0] is reserved for script path (or '' in REPL)
+sys.path.insert(1, '') #include src of repo at runtime
 from MachineVisionLibrary import *
 
 img = cv.imread('MeAndEmoly.jpg')
