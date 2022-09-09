@@ -143,15 +143,13 @@ for distCoeff, intrinsicMatrix in zip(dist, mtx, strict=True):
 
 k = 0
 calibrationDict = {
-    'distortionCoefficients' : [
-        {
+    'distortionCoefficients' : {
             0 : dist[0][0],
             1 : dist[0][1],
             2 : dist[0][2],
             3 : dist[0][3],
             4 : dist[0][4]
-        }
-    ],
+    },
     'intrinsicMatrix': [
         {
             0 : mtx[0][0],
@@ -171,7 +169,7 @@ calibrationDict = {
     ]
 }
 
-print(json.dumps(calibrationDict, indent=4))
+#print(json.dumps(calibrationDict, indent=4))
 
 """
 data = {
@@ -234,17 +232,28 @@ for distCoeffElly, intrinsicMatrixElly in enumerate(returnedCalibrationDict):
     i += 1
 """
 
-retdDist = np.array( returnedCalibrationDict['distortionCoefficients'] )
-retdMtx = np.array( returnedCalibrationDict['intrinsicMatrix'] )
+retdDist = returnedCalibrationDict['distortionCoefficients']
+filledDist = np.empty(len(retdDist))
+for k in range(len(retdDist)):
+    filledDist[k] = retdDist[str(k)]
+    k += 1
+
+retdMtx = returnedCalibrationDict['intrinsicMatrix']
+filledMtx = [None] * len(retdMtx)
+for p in range(len(retdMtx)):
+    innerMtx = np.empty(len(retdMtx))
+    for j in range(len(retdMtx[p])):
+        innerMtx[j] = retdMtx[p][str(j)]
+    filledMtx[p] = innerMtx
 
 #Undistort another image from same cam *with json file params*
 
 img = cv.imread(saveDir + 'DistortedImage.png')
 h,  w = img.shape[:2]
-newcameramtx, roi = cv.getOptimalNewCameraMatrix(retdMtx, retdDist, (w,h), 1, (w,h))
+newcameramtx, roi = cv.getOptimalNewCameraMatrix(filledMtx, filledDist, (w,h), 1, (w,h))
 
 # undistort
-dst = cv.undistort(img, retdMtx, retdDist, None, newcameramtx)
+dst = cv.undistort(img, filledMtx, filledDist, None, newcameramtx)
 
 # crop the image
 x, y, w, h = roi
