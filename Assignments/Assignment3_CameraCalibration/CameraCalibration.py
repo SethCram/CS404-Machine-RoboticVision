@@ -5,6 +5,7 @@ Assignment 3 - Camera Calibration
 """
 
 import os
+import platform
 import numpy as np
 import cv2 as cv
 import glob
@@ -127,12 +128,10 @@ calibrationDict = {
 
 #print(json.dumps(calibrationDict, indent=4))
 
-if(os.name == "Windows"):
+if(platform.system() == "Windows"):
     jsonFileName = 'WinCamCalibration.json'
 else:
     jsonFileName = 'MacCamCalibration.json'
-
-print(os.name)
 
 #Save calibrated cam params to json file from https://stackoverflow.com/a/26057360/13046931 
 with open(jsonFileName, 'w') as fp:
