@@ -141,6 +141,7 @@ for distCoeff, intrinsicMatrix in zip(dist, mtx, strict=True):
         calibrationDict[distCoeffElly] = intrinsicMatrixElly
 """
 
+"""
 k = 0
 calibrationDict = {
     'distortionCoefficients' : {
@@ -167,6 +168,12 @@ calibrationDict = {
             2 : mtx[2][2]
         }
     ]
+}
+"""
+
+calibrationDict = {
+    'distortionCoefficients': dist.tolist(),
+    'intrinsicMatrix': mtx.tolist()
 }
 
 #print(json.dumps(calibrationDict, indent=4))
@@ -232,6 +239,7 @@ for distCoeffElly, intrinsicMatrixElly in enumerate(returnedCalibrationDict):
     i += 1
 """
 
+"""
 retdDist = returnedCalibrationDict['distortionCoefficients']
 filledDist = np.empty(len(retdDist))
 for k in range(len(retdDist)):
@@ -245,15 +253,19 @@ for p in range(len(retdMtx)):
     for j in range(len(retdMtx[p])):
         innerMtx[j] = retdMtx[p][str(j)]
     filledMtx[p] = innerMtx
+"""
+
+retdMatrix = np.asarray( returnedCalibrationDict['intrinsicMatrix'] )
+retdCoeffs = np.asarray( returnedCalibrationDict['distortionCoefficients'] )
 
 #Undistort another image from same cam *with json file params*
 
 img = cv.imread(saveDir + 'DistortedImage.png')
 h,  w = img.shape[:2]
-newcameramtx, roi = cv.getOptimalNewCameraMatrix(filledMtx, filledDist, (w,h), 1, (w,h))
+newcameramtx, roi = cv.getOptimalNewCameraMatrix(retdMatrix, retdCoeffs, (w,h), 1, (w,h))
 
 # undistort
-dst = cv.undistort(img, filledMtx, filledDist, None, newcameramtx)
+dst = cv.undistort(img, retdMatrix, retdCoeffs, None, newcameramtx)
 
 # crop the image
 x, y, w, h = roi
