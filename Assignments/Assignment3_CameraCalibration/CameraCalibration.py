@@ -127,7 +127,12 @@ calibrationDict = {
 
 #print(json.dumps(calibrationDict, indent=4))
 
-jsonFileName = 'CamCalibration.json'
+if(os.name == "Windows"):
+    jsonFileName = 'WinCamCalibration.json'
+else:
+    jsonFileName = 'MacCamCalibration.json'
+
+print(os.name)
 
 #Save calibrated cam params to json file from https://stackoverflow.com/a/26057360/13046931 
 with open(jsonFileName, 'w') as fp:
