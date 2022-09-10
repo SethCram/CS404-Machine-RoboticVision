@@ -8,21 +8,15 @@ import os
 import numpy as np
 import cv2 as cv
 import glob
-import sys
 import json
-
-#used https://stackoverflow.com/a/4383597/13046931 to import lib
-# caution: path[0] is reserved for script path (or '' in REPL)
-sys.path.insert(1, '') #include src of repo at runtime
-from MachineVisionLibrary import *
+from MachineVisionLibrary import mv_functs
 
 decision = input("Do you need to take more pictures for calibration?(y/n)")
 
-#dir files saved to
-saveDir = "Assignments/Assignment3_CameraCalibration/"
-
 #glob found images
-images = glob.glob(saveDir + '*.jpg')
+#images = glob.glob(saveDir + '*.jpg')
+images = glob.glob('*.jpg')
+
 
 #if needa take more pics
 if(decision == "y"):
@@ -31,8 +25,6 @@ if(decision == "y"):
 
     #grab device 0 (TAKES A LONG TIME) (works on Windows+Mac)
     webcam = cv.VideoCapture(0)
-
-    #images = []
 
     #want pattern board to be in various angles for this
     # displays the camera feed in a cv2.namedWindow and will take a snapshot when you hit SPACE. It will also quit if you hit ESC.
@@ -62,22 +54,15 @@ if(decision == "y"):
             
             #SAVE IMAGE
             img_name = "opencv_frame_{}.jpg".format(img_counter)
-            cv.imwrite(saveDir+img_name, frame)
+            cv.imwrite(img_name, frame)
             print("{} written!".format(img_name))
             img_counter += 1
-            
-            #STORE IMAGE FOR CALIBRATION
-            #add curr still to images
-            #images.append(frame)
-            #img_name = "opencv_frame_{}.png".format(img_counter)
-            #print("{} cached for calibration!".format(img_name))
-            #img_counter += 1
         
     webcam.release()
     cv.destroyAllWindows()
     
     #glob prev found images w/ new ones too
-    images = glob.glob(saveDir + '*.jpg')
+    images = glob.glob('*.jpg')
 
 # rest mainly from https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html unless otherwise specified
 
@@ -111,12 +96,7 @@ for fname in images:
         #if added more images
         if(decision == "y"):
             #show all images drawn on
-            showImage(img)
-        
-        #SAVE IMAGE
-        #img_name = "valid_frame_{}.jpg".format(patternsCaptured)
-        #cv.imwrite(saveDir+img_name, frame)
-        #print("{} written!".format(img_name))
+            mv_functs.showImage(img)
         
         patternsCaptured += 1
     #if chess board corners not found
@@ -167,7 +147,7 @@ retdCoeffs = np.asarray( returnedCalibrationDict['distortionCoefficients'] )
 
 #Undistort another image from same cam *with json file params*
 
-img = cv.imread(saveDir + 'DistortedImage.png')
+img = cv.imread('DistortedImage.png')
 h,  w = img.shape[:2]
 newcameramtx, roi = cv.getOptimalNewCameraMatrix(retdMatrix, retdCoeffs, (w,h), 1, (w,h))
 
@@ -177,4 +157,4 @@ dst = cv.undistort(img, retdMatrix, retdCoeffs, None, newcameramtx)
 # crop the image
 x, y, w, h = roi
 dst = dst[y:y+h, x:x+w]
-cv.imwrite(saveDir + 'UndistortedImage.png', dst)
+cv.imwrite('UndistortedImage.png', dst)

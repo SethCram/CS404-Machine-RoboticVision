@@ -1,9 +1,9 @@
 from setuptools import find_packages, setup
 setup(
     name='MachineVisionLibrary',
-    packages=find_packages(include=['MachineVisionLibFolder']),
-    version='0.1.0',
-    description='My first Python library',
+    packages=find_packages(include=['MachineVisionLibrary']),
+    version='0.1.1',
+    description='Machine Vision Python library',
     author='Me',
     license='MIT',
     install_requires=['opencv-python'], #should have 'cv2' but it isn't a package?
