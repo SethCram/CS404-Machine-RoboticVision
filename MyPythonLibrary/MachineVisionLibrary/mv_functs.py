@@ -1,7 +1,11 @@
-#!/usr/bin/env python3
+"""
+Author: Seth Cram
+Class: CS404 - Machine and Robotic Vision
+"""
+
 import cv2 as cv 
 
-def showImage(image, windowName = "OpenCV Picture", closeKey = 'c'):
+def showImage(image, windowName = "Press c to close", closeKey = 'c'):
     """Shows the given image until the closeKey is pressed.
 
     Args:

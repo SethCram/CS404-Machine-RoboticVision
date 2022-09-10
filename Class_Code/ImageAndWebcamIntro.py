@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 import cv2 as cv 
-import sys
-
-#used https://stackoverflow.com/a/4383597/13046931 to import lib
-# caution: path[0] is reserved for script path (or '' in REPL)
-sys.path.insert(1, '') #include src of repo at runtime
-from MachineVisionLibrary import *
 
 CLOSE_KEY = 'c'
 

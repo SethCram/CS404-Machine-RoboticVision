@@ -17,7 +17,6 @@ decision = input("Do you need to take more pictures for calibration?(y/n)")
 #images = glob.glob(saveDir + '*.jpg')
 images = glob.glob('*.jpg')
 
-
 #if needa take more pics
 if(decision == "y"):
 
@@ -42,9 +41,10 @@ if(decision == "y"):
         if not ret:
             print("failed to grab frame")
             break
-        cv.imshow("test", frame)
+        cv.imshow("Press esc to close, or space to take a picture", frame)
 
         k = cv.waitKey(1)
+        
         if k%256 == 27:
             # ESC pressed
             print("Escape hit, closing...")
@@ -142,6 +142,7 @@ with open(jsonFileName, 'r') as f:
 for i in returnedCalibrationDict:
     print(i)
 
+#convert retd lists back to numpy arrs
 retdMatrix = np.asarray( returnedCalibrationDict['intrinsicMatrix'] )
 retdCoeffs = np.asarray( returnedCalibrationDict['distortionCoefficients'] )
 

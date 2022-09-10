@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 import numpy as np
 import cv2 as cv
-import sys
 
-#used https://stackoverflow.com/a/4383597/13046931 to import lib
-# caution: path[0] is reserved for script path (or '' in REPL)
-sys.path.insert(1, '') #include src of repo at runtime
-from MachineVisionLibrary import *
+from MachineVisionLibrary import mv_functs
 
 img = cv.imread('MeAndEmoly.jpg')
 rows, cols, channels = img.shape
@@ -17,12 +13,12 @@ M = np.float32([[1, 0, 100], [0, 1, 50]])
 # 1 0 100
 # 0 1 50
 imgTranslated = cv.warpAffine(img, M, (cols, rows))
-showImage(imgTranslated)
+mv_functs.showImage(imgTranslated)
 
 #Rotation
 M = cv.getRotationMatrix2D(((cols-1)/2.0, (rows-1)/2.0), 90, 1)
 imgRotated = cv.warpAffine(img, M, (cols, rows))
-showImage(imgRotated)
+mv_functs.showImage(imgRotated)
 
 #RESIZE/SCALING (common w/ passing to AI models)
 
@@ -35,31 +31,31 @@ imgResized = cv.resize(img.copy(), (int(img.shape[1]*1.5), int(img.shape[0]*1.5)
 #shrink
 #imgResized = cv.resize(img.copy(), None, fx=0.1, fy=0.1, interpolation=cv.INTER_CUBIC)
 
-showImage(imgResized)
+mv_functs.showImage(imgResized)
 
 #General Affine Tranformation (useful for general rot)
 first_pnts = np.float32([ [50,50], [200,50], [50,200] ])
 nxt_pnts = np.float32([ [10,100], [200,50], [100,250] ])
 M = cv.getAffineTransform(first_pnts, nxt_pnts) #openCV figure out transform for u if dont want specific transform
 imgRotated = cv.warpAffine(img, M, (cols, rows)) 
-showImage(imgRotated)
+mv_functs.showImage(imgRotated)
 
 #Perspective Transform
 first_pnts = np.float32([ [50,50], [400,50], [50,400], [400,400] ]) #uses 4 bc all 4 corners?
 nxt_pnts = np.float32([ [50,0], [600,0], [50,50], [600,600] ])
 M = cv.getPerspectiveTransform(first_pnts, nxt_pnts)
 imgPerspective = cv.warpPerspective(img, M, (cols, rows))
-showImage(imgPerspective)
+mv_functs.showImage(imgPerspective)
 
 #COLOR CHANNELS
 b, g, r = cv.split(img)
-showImage(b)
-showImage(g)
-showImage(r)
+mv_functs.showImage(b)
+mv_functs.showImage(g)
+mv_functs.showImage(r)
 
 # (possible not working properly) (if working properly only supposed to show 1 pixel??)
 blue = img[:, :, 2] = 0 #numpy faster (zeros out index 2 so no red?)
-showImage(blue)
+mv_functs.showImage(blue)
 
 #Brightness/Contrast
 #output_pixel = (input_pixel * alpha ) + beta
@@ -77,11 +73,11 @@ for row_pixel in range(0, img.shape[0]):
             imgBright[row_pixel][col_pixel][channel_pixel] = np.clip( img[row_pixel][col_pixel][channel_pixel]*alpha + beta, 0, 255 )
 #if no clipping, vals fall below 0 and above 255
 
-showImage(imgBright)
+mv_functs.showImage(imgBright)
 
 #brighten using funct
 imgBright = cv.convertScaleAbs(img, alpha=alpha, beta=beta)
-showImage(imgBright)
+mv_functs.showImage(imgBright)
 
 #Gamma Correction
 #gamma = 1.0
@@ -92,4 +88,4 @@ for  i in range(256):
     look_up[0, i] = np.clip(pow(i/255.0, gamma)*255.0, 0, 255) 
 imgGammafied = cv.LUT(img, look_up)
 
-showImage(imgGammafied)
+mv_functs.showImage(imgGammafied)
