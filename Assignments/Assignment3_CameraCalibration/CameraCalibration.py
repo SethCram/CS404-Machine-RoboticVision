@@ -126,50 +126,19 @@ for fname in images:
 
 cv.destroyAllWindows()
 
-print("{} patterns captured for calibration. Should be atleast 10.".format(patternsCaptured))
+#print("{} patterns captured for calibration. Should be atleast 10.".format(patternsCaptured))
+
+assert patternsCaptured >= 10, "Only {} patterns captured for calibration. Should be atleast 10.".format(patternsCaptured)
 
 ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-#save intrinsic matrix parameters and the distortion coefficients 
-#calibrationDict = {
-#    dist: mtx
-#}
-"""
-calibrationDict = {}
-for distCoeff, intrinsicMatrix in zip(dist, mtx, strict=True):
-    for distCoeffElly, intrinsicMatrixElly in zip(distCoeff, intrinsicMatrix, strict=True):
-        calibrationDict[distCoeffElly] = intrinsicMatrixElly
-"""
-
-"""
-k = 0
-calibrationDict = {
-    'distortionCoefficients' : {
-            0 : dist[0][0],
-            1 : dist[0][1],
-            2 : dist[0][2],
-            3 : dist[0][3],
-            4 : dist[0][4]
-    },
-    'intrinsicMatrix': [
-        {
-            0 : mtx[0][0],
-            1 : mtx[0][1], 
-            2 : mtx[0][2]
-        },
-        {
-            0 : mtx[1][0],
-            1 : mtx[1][1], 
-            2 : mtx[1][2]
-        },
-        {
-            0 : mtx[2][0],
-            1 : mtx[2][1], 
-            2 : mtx[2][2]
-        }
-    ]
-}
-"""
+#Re-projection error
+mean_error = 0
+for i in range(len(objpoints)):
+    imgpoints2, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
+    error = cv.norm(imgpoints[i], imgpoints2, cv.NORM_L2)/len(imgpoints2)
+    mean_error += error
+print( "total error: {}".format(mean_error/len(objpoints)) )
 
 calibrationDict = {
     'distortionCoefficients': dist.tolist(),
@@ -177,40 +146,6 @@ calibrationDict = {
 }
 
 #print(json.dumps(calibrationDict, indent=4))
-
-"""
-data = {
-    'employees' : [
-        {
-            'name' : 'John Doe',
-            'department' : 'Marketing',
-            'place' : 'Remote'
-        },
-        {
-            'name' : 'Jane Doe',
-            'department' : 'Software Engineering',
-            'place' : 'Remote'
-        },
-        {
-            'name' : 'Don Joe',
-            'department' : 'Software Engineering',
-            'place' : 'Office'
-        }
-    ]
-}
-json_string = json.dumps(data)
-print(json_string)
-
-for distCoeffArr in dist:
-    for distCoeff in distCoeffArr:
-        calibrationDict[k] = distCoeff
-        k += 1
-        
-for intrinsincArr in mtx:
-    for intrinsicElly in intrinsincArr:
-        calibrationDict[k] = intrinsicElly
-        k += 1
-"""
 
 jsonFileName = 'CamCalibration.json'
 
@@ -226,34 +161,6 @@ with open(jsonFileName, 'r') as f:
 # Iterating through the json list
 for i in returnedCalibrationDict:
     print(i)
-    
-"""
-retdDist = np.empty(len(returnedCalibrationDict))
-retdMtx = np.empty(len(returnedCalibrationDict))
-
-i = 0
-    
-#take params back from retd dict
-for distCoeffElly, intrinsicMatrixElly in enumerate(returnedCalibrationDict):
-    retdDist[i], retdMtx[i] = distCoeffElly, intrinsicMatrixElly
-    i += 1
-"""
-
-"""
-retdDist = returnedCalibrationDict['distortionCoefficients']
-filledDist = np.empty(len(retdDist))
-for k in range(len(retdDist)):
-    filledDist[k] = retdDist[str(k)]
-    k += 1
-
-retdMtx = returnedCalibrationDict['intrinsicMatrix']
-filledMtx = [None] * len(retdMtx)
-for p in range(len(retdMtx)):
-    innerMtx = np.empty(len(retdMtx))
-    for j in range(len(retdMtx[p])):
-        innerMtx[j] = retdMtx[p][str(j)]
-    filledMtx[p] = innerMtx
-"""
 
 retdMatrix = np.asarray( returnedCalibrationDict['intrinsicMatrix'] )
 retdCoeffs = np.asarray( returnedCalibrationDict['distortionCoefficients'] )
