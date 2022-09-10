@@ -130,8 +130,10 @@ calibrationDict = {
 
 if(platform.system() == "Windows"):
     jsonFileName = 'WinCamCalibration.json'
+    img = cv.imread('WinDistortedImage.png')
 else:
     jsonFileName = 'MacCamCalibration.json'
+    img = cv.imread('MacDistortedImage.png')
 
 #Save calibrated cam params to json file from https://stackoverflow.com/a/26057360/13046931 
 with open(jsonFileName, 'w') as fp:
@@ -152,7 +154,7 @@ retdCoeffs = np.asarray( returnedCalibrationDict['distortionCoefficients'] )
 
 #Undistort another image from same cam *with json file params*
 
-img = cv.imread('DistortedImage.png')
+#img = cv.imread('DistortedImage.png')
 h,  w = img.shape[:2]
 newcameramtx, roi = cv.getOptimalNewCameraMatrix(retdMatrix, retdCoeffs, (w,h), 1, (w,h))
 
