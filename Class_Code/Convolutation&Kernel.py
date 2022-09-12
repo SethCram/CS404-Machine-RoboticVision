@@ -18,14 +18,26 @@ mv_functs.showImage(imgMedBlur)
 imgEdgePreserveBlur = cv.bilateralFilter(img, 11, 61, 39)
 mv_functs.showImage(imgEdgePreserveBlur)
 
+#EDGE DETECTION GRADIENTS
+
 #Conv to grey scale
 imgGrey = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 mv_functs.showImage(imgGrey)
 #pre proccing to reduce noise
 imgGaussBlur = cv.GaussianBlur(imgGrey, (15,15), 0)
+
 #should find vert lines bc dx (find places of big change)
 #imgSobel = cv.Sobel(imgGaussBlur, -1, 1, 0, ksize=5) #image, depth, order of x deriv, order of y deriv, kernel size
 #should find horiz lines bc dy
 #imgSobel = cv.Sobel(imgGaussBlur, -1, 0, 0, ksize=5)
 imgSobel = cv.Sobel(imgGaussBlur, -1, 1, 1, ksize=5)
 mv_functs.showImage(imgSobel)
+
+#SCHARR (horiz or vertical)
+#imgSchar = cv.Scharr(imgGaussBlur, -1, 1, 0)
+imgSchar = cv.Scharr(imgGaussBlur, -1, 0, 0)
+mv_functs.showImage(imgSchar)
+
+#LAPLACIAN (both vert and horiz)
+imgLaplacian = cv.Laplacian(imgGaussBlur, cv.CV_64F)
+mv_functs.showImage(imgLaplacian)
