@@ -1,3 +1,4 @@
+from dis import show_code
 import cv2 as cv
 from MachineVisionLibrary import mv_functs
 import matplotlib.pyplot as plt
@@ -8,6 +9,9 @@ rows, cols, channels = img.shape
 
 imgGrey = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 mv_functs.showImage(imgGrey)
+
+imgGaussBlur = cv.GaussianBlur(img, (7,7), 0) 
+mv_functs.showImage(imgGaussBlur)
 
 #BRIGHTNESS HISTOGRAM
 histogram = cv.calcHist([imgGrey], [0], None, [256], [0, 256])
@@ -37,6 +41,28 @@ ret, imgThreshInvBin = cv.threshold(imgGrey, 127, 255, cv.THRESH_BINARY_INV)
 mv_functs.showImage(imgThreshInvBin)
 
 #TRUNC BINARY
-ret, imgThreshTrunc = cv.threshold(imgGrey, 127, 255, cv.THRESH_TRUNC)
-mv_functs.showImage(imgThreshTrunc) 
+ret, imgThreshTruncBin = cv.threshold(imgGrey, 127, 255, cv.THRESH_TRUNC)
+mv_functs.showImage(imgThreshTruncBin) 
 
+#TOZERO BINARY
+ret, imgThreshTozeroBin = cv.threshold(imgGrey, 127, 255, cv.THRESH_TOZERO)
+mv_functs.showImage(imgThreshTozeroBin)
+
+#TOZERO INV BINARY
+ret, imgThreshTozeroInvBin = cv.threshold(imgGrey, 127, 255, cv.THRESH_TOZERO_INV)
+mv_functs.showImage(imgThreshTozeroInvBin)
+
+#ADAPTIVE MEAN
+imgThreshMeanAdaptive = cv.adaptiveThreshold(imgGrey, 255, cv.ADAPTIVE_THRESH_MEAN_C , cv.THRESH_BINARY, 11, 2)
+mv_functs.showImage(imgThreshMeanAdaptive)
+
+#ADAPTIVE GAUSS 
+imgThreshGaussAdaptive = cv.adaptiveThreshold(imgGrey, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
+mv_functs.showImage(imgThreshGaussAdaptive)
+
+img = cv.imread('MeAndEmoly.jpg')
+
+#OTSU BINARIZATION
+ret, imgThreshOtsu = cv.threshold(imgGrey, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+#ret, imgThreshOtsu = cv.threshold(imgGaussBlur, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU) #fails
+mv_functs.showImage(imgThreshBin)
