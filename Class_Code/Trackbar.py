@@ -56,40 +56,44 @@ def morph():
     key = ord("r")
     cv.namedWindow('controls')
     
+    #blur controls
+    cv.createTrackbar("blur kernel", "controls", 3, 100, nothing)
+    cv.setTrackbarPos('blur kernel', 'controls', 3)
+    
     #Threshold controls
     cv.createTrackbar("threshold", "controls", 3, 100, nothing)
     cv.setTrackbarPos('threshold', 'controls', 3)
     
     #erosion toggle 
     cv.createTrackbar("erosion toggle", "controls", 0, 1, nothing)
-    cv.setTrackbarPos('erosion', 'controls', 0)
+    cv.setTrackbarPos('erosion toggle', 'controls', 0)
     
     #Erosion kernel size controls (if toggle enabled)
     cv.createTrackbar("erosion kernel", "controls", 0, 30, nothing)
-    cv.setTrackbarPos('erosion', 'controls', 3)
+    cv.setTrackbarPos('erosion kernel', 'controls', 3)
     
     #Dilation toggle
     cv.createTrackbar("dilation toggle", "controls", 0, 1, nothing)
-    cv.setTrackbarPos('dilation', 'controls', 0)
+    cv.setTrackbarPos('dilation toggle', 'controls', 0)
     
     #Dilate kernel size controls (if toggle enabled)
     cv.createTrackbar("dilation kernel", "controls", 0, 30, nothing)
-    cv.setTrackbarPos('dilation', 'controls', 3) 
+    cv.setTrackbarPos('dilation kernel', 'controls', 3) 
     
     while key != ord('s'): #ord = key press
         still = webcam.read()
         #conv to greyscale
-        imgGrey = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
+        img = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
         blurLevel = int( cv.getTrackbarPos('blur kernel', 'controls'))
         #turn even numbers odd bc odd kernel needed
         if blurLevel % 2 == 0:
             blurLevel += 1
-        #blur (fails)
-        imgBlur = cv.GaussianBlur(imgGrey, (7, 7), 0)
+        #blur
+        img = cv.GaussianBlur(img, (blurLevel, blurLevel), 0)
         
         #thresh 
         thresh = int(cv.getTrackbarPos('threshold', 'controls'))
-        img = cv.threshold(imgBlur, thresh, 255, cv.THRESH_BINARY)
+        ret, img = cv.threshold(img, thresh, 255, cv.THRESH_BINARY)
         
         #erosion
         erode = int( cv.getTrackbarPos('erosion toggle', 'controls'))
@@ -98,7 +102,7 @@ def morph():
             if(erosionLevel % 2 == 0):
                 erosionLevel += 1
         
-            img = cv.erode(img, np.ones((erosionLevel, erosionLevel)), dtype=int)
+            img = cv.erode(img, np.ones((erosionLevel, erosionLevel), dtype=int) )
         
         #dilation
         dilate = int( cv.getTrackbarPos('dilation toggle', 'controls'))
@@ -107,13 +111,14 @@ def morph():
             if(dilateLevel % 2 == 0):
                 dilateLevel += 1
         
-            img = cv.dilate(img, np.ones((dilateLevel, dilateLevel)), dtype=int)
+            img = cv.dilate(img, np.ones((dilateLevel, dilateLevel), dtype=int))
         
         #erosion followed by dilaton is opening
         
-        cv.imshow("Image", img)
+        
+        cv.imshow("image", img)
         key = cv.waitKey(5)   
 
 #threshold()
 #blur()                
-#morph()
+morph()
