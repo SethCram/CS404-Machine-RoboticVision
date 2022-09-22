@@ -13,6 +13,26 @@ class Impl_Consts():
 def nothing(x):
     pass
 
+def CreateAndSetTrackbar(
+    trackbarName: str, windowName = Impl_Consts.IMAGE_WINDOW_NAME,
+    initValue = 0, lowerBound = 0, upperBound = 255, 
+    callbackFunct = nothing
+):
+    """
+    Creates and initializes a trackbar.
+
+    Args:
+        trackbarName (str): _description_
+        windowName (_type_, optional): _description_. Defaults to Impl_Consts.IMAGE_WINDOW_NAME.
+        initValue (int, optional): _description_. Defaults to 0.
+        lowerBound (int, optional): _description_. Defaults to 0.
+        upperBound (int, optional): _description_. Defaults to 255.
+        callbackFunct (_type_, optional): _description_. Defaults to nothing.
+    """
+    
+    cv.createTrackbar(trackbarName, windowName, lowerBound, upperBound, callbackFunct)
+    cv.setTrackbarPos(trackbarName, windowName, initValue)   
+
 def showImage(image, windowName = Impl_Consts.IMAGE_WINDOW_NAME, closeKey = Impl_Consts.CLOSE_KEY):
     """Shows the given image until the closeKey is pressed.
 

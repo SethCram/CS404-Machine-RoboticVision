@@ -20,9 +20,12 @@ if __name__ == "__main__":
         
     cv.createTrackbar("lower", mv_functs.Impl_Consts.CONTROLS_PANEL_NAME, 0, 255, mv_functs.nothing)
     cv.createTrackbar("upper", mv_functs.Impl_Consts.CONTROLS_PANEL_NAME, 0, 255, mv_functs.nothing)
+    
+    cv.createTrackbar("blur kernel", "controls", 3, 100, mv_functs.nothing)
+    cv.setTrackbarPos('blur kernel', 'controls', 3)
 
     #show webcam footage
-    while (key != mv_functs.Impl_Consts.CLOSE_KEY):
+    while (True):
         still = webcam.read()
         
         og_img = still[1]
@@ -32,8 +35,13 @@ if __name__ == "__main__":
         #conv to greyscale
         img = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
         
+        blurLevel = int( cv.getTrackbarPos('blur kernel', mv_functs.Impl_Consts.CONTROLS_PANEL_NAME))
+        #turn even numbers odd bc odd kernel needed
+        if blurLevel % 2 == 0:
+            blurLevel += 1
+        
         #gaussian blur
-        img = cv.GaussianBlur(img, (5,5), 0)
+        img = cv.GaussianBlur(img, (blurLevel, blurLevel), 0)
         
         #get trackbar poses
         lower = int( cv.getTrackbarPos('lower', mv_functs.Impl_Consts.CONTROLS_PANEL_NAME) )
@@ -69,7 +77,8 @@ if __name__ == "__main__":
         
         cv.imshow(mv_functs.Impl_Consts.IMAGE_WINDOW_NAME, img) #first val is data type
         
-        key = cv.waitKey(5)
+        if cv.waitKey(5) & 0xFF == ord(mv_functs.Impl_Consts.CLOSE_KEY):
+            break
         
     # After the loop release the cap object
     webcam.release()
