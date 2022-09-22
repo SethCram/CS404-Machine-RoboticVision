@@ -5,7 +5,15 @@ Class: CS404 - Machine and Robotic Vision
 
 import cv2 as cv 
 
-def showImage(image, windowName = "Press c to close", closeKey = 'c'):
+class Impl_Consts():
+    CLOSE_KEY = 'c'
+    CONTROLS_PANEL_NAME = 'controls'
+    IMAGE_WINDOW_NAME = "Press c to close"
+
+def nothing(x):
+    pass
+
+def showImage(image, windowName = Impl_Consts.IMAGE_WINDOW_NAME, closeKey = Impl_Consts.CLOSE_KEY):
     """Shows the given image until the closeKey is pressed.
 
     Args:
