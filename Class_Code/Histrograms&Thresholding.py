@@ -1,4 +1,4 @@
-from dis import show_code
+#!/usr/bin/env python3
 import cv2 as cv
 from MachineVisionLibrary import mv_functs
 import matplotlib.pyplot as plt
