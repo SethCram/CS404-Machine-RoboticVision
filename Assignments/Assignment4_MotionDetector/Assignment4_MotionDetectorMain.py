@@ -23,6 +23,10 @@ if __name__ == "__main__":
     
     cv.createTrackbar("blur kernel", "controls", 3, 100, mv_functs.nothing)
     cv.setTrackbarPos('blur kernel', 'controls', 3)
+    
+    #create bg subtractor
+    #bg = cv.createBackgroundSubtractorMOG2() #occasional flashes
+    bg = cv.createBackgroundSubtractorKNN() 
 
     #show webcam footage
     while (True):
@@ -43,7 +47,7 @@ if __name__ == "__main__":
         #gaussian blur
         img = cv.GaussianBlur(img, (blurLevel, blurLevel), 0)
         
-        #get trackbar poses
+        #get trackbar poses (best if both set incredibly high)
         lower = int( cv.getTrackbarPos('lower', mv_functs.Impl_Consts.CONTROLS_PANEL_NAME) )
         upper = int( cv.getTrackbarPos('upper', mv_functs.Impl_Consts.CONTROLS_PANEL_NAME) )
         
@@ -54,7 +58,9 @@ if __name__ == "__main__":
         
         contours = list(contours)
         contours.sort(key=cv.contourArea, reverse=True)
-        contours = contours[0]
+        # throws "list index out of range" if blur kernel set too high (22 max?) 
+        #  or if bg subtractor used before image bounding
+        contours = contours[0] 
         
         cv.drawContours(og_img, contours, -1, (255, 0, 0), 3)
         img = og_img
@@ -74,6 +80,9 @@ if __name__ == "__main__":
         center = (int(x), int(y))
         radius = int(radius)
         cv.circle(img, center, radius, (0,255,0), 2)
+        
+        #subtr background 
+        img = bg.apply(img)
         
         cv.imshow(mv_functs.Impl_Consts.IMAGE_WINDOW_NAME, img) #first val is data type
         
