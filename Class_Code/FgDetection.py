@@ -51,7 +51,7 @@ def GrabCut():
     fgModel = np.zeros((1, 65), np.float64)
     
     #better rect for segmenting
-    rect = (133, 185, 394, 489)
+    rect = (133, 185, 394, 489) #not necessary if init w/ rect
     cv.grabCut(img, mask, rect, bgModel, fgModel, 3, cv.GC_INIT_WITH_RECT)
     
     #mask
@@ -80,10 +80,61 @@ def BgSubtractor():
         img = bg.apply(img)
         cv.imshow("Image", img)
         key = cv.waitKey(5)
+      
+def nothing(x):
+    pass
+        
+def Contour_Masking():
+    webcam = cv.VideoCapture(0)
+    
+    key = ord('r')
+    cv.namedWindow('controls')
+    
+    cv.createTrackbar("lower", 'controls', 0, 255, nothing)
+    cv.createTrackbar("upper", 'controls', 0, 255, nothing)
+    
+    while key != ord('s'):
+        still = webcam.read()
+        
+        og_img = still[1]
+        
+        #conv to greyscale
+        img = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
+        
+        #v = np.median(img)
+        
+        #gaussian blur
+        img = cv.GaussianBlur(img, (5,5), 0)
+        
+        #get trackbar poses
+        lower = int( cv.getTrackbarPos('lower', 'controls'))
+        upper = int( cv.getTrackbarPos('upper', 'controls'))
+        
+        #canny edge detection
+        img = cv.Canny(img, lower, upper)
+        img = cv.morphologyEx(img, cv.MORPH_CLOSE, np.ones((5,5))) #closing so dilation -> erosion
+        
+        #gen contours
+        contours, hierarchy = cv.findContours(img, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        
+        #sort contours
+        contours = sorted(contours, key=cv.contourArea)
+        
+        #create mask
+        mask = np.zeros_like(img)
+        
+        #Draw contours on mask
+        cv.drawContours(mask, [contours[-1]], -1, 255, cv.FILLED, 1)
+        #anywhere og img is masked, set to black
+        og_img[mask == 0] = 0
+        cv.imshow("Image", og_img)
+        key = cv.waitKey(5)
         
         
         
 #connected()
 #GrabCut()
 
-BgSubtractor()
+#BgSubtractor()
+
+Contour_Masking()
