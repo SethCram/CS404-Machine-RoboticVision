@@ -15,17 +15,21 @@ if __name__ == "__main__":
     webcam = cv.VideoCapture(0)
 
     key = ord('r')
+    
+    prevFrame = None
 
     cv.namedWindow(mv_functs.Impl_Consts.CONTROLS_PANEL_NAME)
         
-    cv.createTrackbar("lower", mv_functs.Impl_Consts.CONTROLS_PANEL_NAME, 0, 255, mv_functs.nothing)
-    cv.createTrackbar("upper", mv_functs.Impl_Consts.CONTROLS_PANEL_NAME, 0, 255, mv_functs.nothing)
+    threshValStr = "Threshold"
+    mv_functs.CreateAndSetTrackbar(threshValStr, initValue=20)
     
-    cv.createTrackbar("blur kernel", "controls", 3, 100, mv_functs.nothing)
-    cv.setTrackbarPos('blur kernel', 'controls', 3)
+    blurKernelStr = "blur kernel"
+    mv_functs.CreateAndSetTrackbar(blurKernelStr, initValue=25, lowerBound=3, upperBound=100)
+    
+    dilationKernelStr = "dilation kernel"
+    mv_functs.CreateAndSetTrackbar(dilationKernelStr, initValue=10, lowerBound=3, upperBound=100)
     
     #create bg subtractor
-    #bg = cv.createBackgroundSubtractorMOG2() #occasional flashes
     bg = cv.createBackgroundSubtractorKNN() 
 
     #show webcam footage
@@ -37,58 +41,76 @@ if __name__ == "__main__":
         #should undistortion json info be used? or just for images and not webcame caps?
             
         #conv to greyscale
-        img = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
+        greyFrame = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
         
-        blurLevel = int( cv.getTrackbarPos('blur kernel', mv_functs.Impl_Consts.CONTROLS_PANEL_NAME))
+        blurLevel = int( cv.getTrackbarPos(blurKernelStr, mv_functs.Impl_Consts.CONTROLS_PANEL_NAME))
         #turn even numbers odd bc odd kernel needed
         if blurLevel % 2 == 0:
             blurLevel += 1
         
         #gaussian blur
-        img = cv.GaussianBlur(img, (blurLevel, blurLevel), 0)
+        blurredFrame = cv.GaussianBlur(greyFrame, (blurLevel, blurLevel), 0)
         
-        #get trackbar poses (best if both set incredibly high)
-        lower = int( cv.getTrackbarPos('lower', mv_functs.Impl_Consts.CONTROLS_PANEL_NAME) )
-        upper = int( cv.getTrackbarPos('upper', mv_functs.Impl_Consts.CONTROLS_PANEL_NAME) )
+        #if 1st image bc prev frame empty
+        if( prevFrame is None):
+            #set prev frame to this one
+            prevFrame = blurredFrame
+            
+            #break out of loop + exec nxt iteration
+            continue 
         
-        #canny edge
-        img = cv.Canny(img, lower, upper)
+        #calc diff tween prev and curr frame
+        frameDiff = cv.absdiff(prevFrame, blurredFrame)
         
-        contours, hierarchy = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        #update prev frame
+        prevFrame = blurredFrame
+        
+        #dilate img so diffs more visible (better for contour detection)
+        dilationKernelInt = int( cv.getTrackbarPos(dilationKernelStr, mv_functs.Impl_Consts.CONTROLS_PANEL_NAME) )
+        if dilationKernelInt % 2 == 0:
+            dilationKernelInt += 1
+        
+        dilationKernel = np.ones((dilationKernelInt, dilationKernelInt))
+        dilatedFrameDiff = cv.dilate(frameDiff, dilationKernel, 1)
+        
+        thresh = int( cv.getTrackbarPos(threshValStr, mv_functs.Impl_Consts.CONTROLS_PANEL_NAME) )
+        
+        #take diff tween areas diff enough (want big area for easier contouring)
+        threshFrame = cv.threshold(dilatedFrameDiff, thresh=thresh, maxval=255, type=cv.THRESH_BINARY)[1]
+        
+        contours, _ = cv.findContours(threshFrame, mode=cv.RETR_EXTERNAL, method=cv.CHAIN_APPROX_SIMPLE)
+        
+        #cv.drawContours(image=og_img, contours=contours, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv.LINE_AA)
         
         contours = list(contours)
         contours.sort(key=cv.contourArea, reverse=True)
         # throws "list index out of range" if blur kernel set too high (22 max?) 
         #  or if bg subtractor used before image bounding
-        contours = contours[0] 
         
-        cv.drawContours(og_img, contours, -1, (255, 0, 0), 3)
-        img = og_img
+        """doesn't work (stuttery)
+        if(contours is not None and len(contours) > 0):
+            contour = contours[0] 
+        else:
+            cv.imshow(mv_functs.Impl_Consts.IMAGE_WINDOW_NAME, og_img)
+            continue
         
-        #bounding rect
-        x,y,w,h = cv.boundingRect(contours)
-        cv.rectangle(img, (x,y), (x+w, y+h), (0, 255, 0), 2)
+        x,y,w,h = cv.boundingRect(contour)
+        cv.rectangle(og_img, (x,y), (x+w, y+h), (0, 255, 0), 2)
+        """
         
-        #rot'd rect (more conservative w/ area and rots to fit shape)
-        rect = cv.minAreaRect(contours)
-        box = cv.boxPoints(rect)
-        box = np.int0(box)
-        cv.drawContours(img, [box], 0, (0,0,255), 2)
+        #walk thru all contours
+        for contour in contours:
+            #only use contour if big enough
+            if( cv.contourArea(contour) >= 50 ):
+                #bounding rect
+                x,y,w,h = cv.boundingRect(contour)
+                cv.rectangle(og_img, (x,y), (x+w, y+h), (0, 255, 0), 2)
         
-        #min enclosing circ
-        (x,y), radius = cv.minEnclosingCircle(contours)
-        center = (int(x), int(y))
-        radius = int(radius)
-        cv.circle(img, center, radius, (0,255,0), 2)
-        
-        #subtr background 
-        img = bg.apply(img)
-        
-        cv.imshow(mv_functs.Impl_Consts.IMAGE_WINDOW_NAME, img) #first val is data type
+        cv.imshow(mv_functs.Impl_Consts.IMAGE_WINDOW_NAME, og_img) #first val is data type
         
         if cv.waitKey(5) & 0xFF == ord(mv_functs.Impl_Consts.CLOSE_KEY):
             break
-        
+    
     # After the loop release the cap object
     webcam.release()
     cv.destroyAllWindows()
