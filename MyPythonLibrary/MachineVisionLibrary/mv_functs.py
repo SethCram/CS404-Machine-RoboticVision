@@ -9,6 +9,7 @@ class Impl_Consts():
     CLOSE_KEY = 'c'
     CONTROLS_PANEL_NAME = 'controls'
     IMAGE_WINDOW_NAME = "Press c to close"
+    CLASS_NOTES_IMG_NAME = "MeAndEmoly.jpg"
 
 def nothing(x):
     pass
