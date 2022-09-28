@@ -65,9 +65,33 @@ def tut_pyramids():
             src = cv.pyrDown(src, dstsize=(cols // 2, rows // 2))
             print ('** Zoom Out: Image / 2')
             
+def fourier():
+    #reads in image as black and white img
+    img = cv.imread("MeAndEmoly.jpg", 0)
+    
+    key = ord('r')
+    
+    img_float32 = np.float32(img)
+    dft = cv.dft(img_float32, flags=cv.DFT_COMPLEX_OUTPUT)
+    dft_shift = np.fft.fftshift(dft)
+    
+    mag_spectrum = 20*np.log(cv.magnitude(dft_shift[:,:,0], dft_shift[:,:,1]))
+    
+    plt.subplot(121), plt.imshow(img, cmap="gray")
+    
+    plt.title("Input Image"), plt.xticks([]), plt.yticks([])
+    
+    plt.subplot(122), plt.imshow(mag_spectrum, cmap="gray")
+    
+    plt.title("Mag Spectrum"), plt.xticks([]), plt.yticks([])
+    
+    plt.show()
+            
         
 #colormap()
 
 #pyramids()
 
-tut_pyramids()
+#tut_pyramids()
+
+fourier()
