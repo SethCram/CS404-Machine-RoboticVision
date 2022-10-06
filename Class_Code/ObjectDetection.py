@@ -80,9 +80,103 @@ def shi():
         
         cv.imshow("image", img)
         key = cv.waitKey(5)
+
+def SIFT():
+    webcam = cv.VideoCapture(0)
+    key = ord("r")
+    while key != ord(mv_functs.Impl_Consts.CLOSE_KEY):
+        still = webcam.read()
+        img = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
         
+        #create sift
+        sift = cv.SIFT_create()
+        
+        #detect keypoints
+        kp = sift.detect(img, None) #2nd arg = optional mask 
+        
+        #draw keypoints
+        img = cv.drawKeypoints(img, kp, outImage=None)
+        
+        cv.imshow("image", img)
+        
+        key = cv.waitKey(5)
+   
+def BRISK():
+    webcam = cv.VideoCapture(0)
+    key = ord('r')
+    
+    while key != ord(mv_functs.Impl_Consts.CLOSE_KEY):
+        still = webcam.read()
+        img = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
+        
+        #create brisk obj
+        brisk = cv.BRISK_create()
+        #detect keypoints
+        kp = brisk.detect(img, None)
+        #draw keypoints
+        img = cv.drawKeypoints(img, kp, outImage=None)
+        
+        cv.imshow("image", img)
+        key = cv.waitKey(5)
+ 
+def blob():
+    webcam = cv.VideoCapture(0)
+    key = ord('r')
+    
+    while key != ord(mv_functs.Impl_Consts.CLOSE_KEY):
+        still = webcam.read()
+        img = cv.cvtColor(still[1], cv.COLOR_BGR2GRAY)
+        
+        #create new obj
+        blob = cv.SimpleBlobDetector_create()
+        #detect keypoints
+        kp = blob.detect(img, None)
+        #draw keypoints
+        #img = cv.drawKeypoints(img, kp, outImage=None)
+        img = cv.drawKeypoints(img, kp, outImage=None, color= (0, 0, 255), flags = cv.DRAW_MATCHES_FLAGS_DEFAULT)
+        
+        cv.imshow("image", img)
+        key = cv.waitKey(5)
+
+def BruteForce_Matcher():
+    
+    key = ord('r')
+    
+    #read in greyscaled x images of same obj in diff pos's/orientations
+    img1 = cv.imread("dogSitting.PNG", 0)
+    img2 = cv.imread("dogWalking.PNG", 0) #should also be img1?
+    
+    #resize image by half
+    img1 = cv.resize( img1, (int(img1.shape[1]*0.5), int(img1.shape[0]*0.5)) )
+    img2 = cv.resize( img2, (int(img2.shape[1]*0.5), int(img2.shape[0]*0.5)) )
+    
+    orb = cv.ORB_create()
+    kp1, descr1 = orb.detectAndCompute(img1, None)
+    kp2, descr2 = orb.detectAndCompute(img2, None) #should also be descr1?
+    
+    bruteForce = cv.BFMatcher_create(cv.NORM_HAMMING)
+    matches = bruteForce.match(descr1, descr2)
+    matches = sorted(matches, key=lambda x:x.distance)
+    
+    #Draw first 20 matches (could also use KNN)
+    img3 = cv.drawMatches(img1, kp1, img2, kp2, matches[0:20], flags=2, outImg=None)
+    
+    while key != ord(mv_functs.Impl_Consts.CLOSE_KEY):
+        
+        cv.imshow("image", img3)
+        
+        key = cv.waitKey(5)
+    
 #dense_OpticalFlow()
 
 #harris_corners()
 
-shi()
+#shi()
+    
+#SIFT()
+
+#BRISK()
+
+#blob()
+
+BruteForce_Matcher()
