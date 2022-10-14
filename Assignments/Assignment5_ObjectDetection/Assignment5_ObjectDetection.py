@@ -5,11 +5,9 @@ Class: CS404 - Machine and Robotic Vision
 Assignment 4 - Motion Detector
 """
 
-from cv2 import FlannBasedMatcher_create
 import numpy as np
 import cv2 as cv
 from MachineVisionLibrary import mv_functs
-import matplotlib.pyplot as plt
 
 class Img:
     """
@@ -88,7 +86,7 @@ class ObjectDetection:
         else:
             raise ValueError(f"The feature matching method {self.featureMatching} is not implemented.")
     
-    def run(self, resizeBy: float = 0.1) -> None:
+    def run(self, resizeBy: float = 0.1, saveImages: bool = False) -> None:
         #read in greyscaled 3 images of same obj in diff pos's/orientations
         img1 = cv.imread("img1.jpg", cv.IMREAD_GRAYSCALE)
         img2 = cv.imread("img2.jpg", cv.IMREAD_GRAYSCALE)
@@ -172,30 +170,37 @@ class ObjectDetection:
                 imgsArr[0].kp, 
                 imgsArr[j].kp
             )
-            
-            imgsArr[j].img = mv_functs.writeText(imgsArr[j].img, f"{self.featureDetection}, {self.featureMatching}")
-            
+            #use detection + matching to create title
+            titleStr = f"{self.featureDetection}, {self.featureMatching}"
+            #write title on image
+            imgsArr[j].img = mv_functs.writeText(imgsArr[j].img, titleStr)
             #display image w/ matches draw on 
             mv_functs.showImage(imgsArr[j].img)
+            
+            #save image if desired
+            if(saveImages):
+                #save image as pyramid title
+                mv_functs.saveImage(imgsArr[j].img, newPicName="Pyramid_" + titleStr)
 
 if __name__ == "__main__":
     
     resizeImagesBy = 0.1
+    saveImages = True
 
-    odOrbBruteforce = ObjectDetection(featureDetection=ORB_STR, featureMatching=BRUTE_FORCE_STR)
-    odOrbBruteforce.run(resizeImagesBy)
+    od = ObjectDetection(featureDetection=ORB_STR, featureMatching=BRUTE_FORCE_STR)
+    od.run(resizeImagesBy, saveImages)
 
-    odSIFTBruteforce = ObjectDetection(featureDetection=SIFT_STR, featureMatching=BRUTE_FORCE_STR)
-    odSIFTBruteforce.run(resizeImagesBy)
+    od = ObjectDetection(featureDetection=SIFT_STR, featureMatching=BRUTE_FORCE_STR)
+    od.run(resizeImagesBy, saveImages)
 
-    odSIFTBruteforce = ObjectDetection(featureDetection=BRISK_STR, featureMatching=BRUTE_FORCE_STR)
-    odSIFTBruteforce.run(resizeImagesBy)
+    od = ObjectDetection(featureDetection=BRISK_STR, featureMatching=BRUTE_FORCE_STR)
+    od.run(resizeImagesBy, saveImages)
     
-    odSIFTBruteforce = ObjectDetection(featureDetection=SIFT_STR, featureMatching=FLANN_STR)
-    odSIFTBruteforce.run(resizeImagesBy)
+    od = ObjectDetection(featureDetection=SIFT_STR, featureMatching=FLANN_STR)
+    od.run(resizeImagesBy, saveImages)
     
-    odSIFTBruteforce = ObjectDetection(featureDetection=ORB_STR, featureMatching=FLANN_STR)
-    odSIFTBruteforce.run(resizeImagesBy)
+    od = ObjectDetection(featureDetection=ORB_STR, featureMatching=FLANN_STR)
+    od.run(resizeImagesBy), saveImages
     
-    odSIFTBruteforce = ObjectDetection(featureDetection=BRISK_STR, featureMatching=FLANN_STR)
-    odSIFTBruteforce.run(resizeImagesBy)
+    od = ObjectDetection(featureDetection=BRISK_STR, featureMatching=FLANN_STR)
+    od.run(resizeImagesBy, saveImages)
