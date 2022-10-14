@@ -57,6 +57,9 @@ class ObjectDetection:
         #find the matches using KNN of matching obj
         matches = matchingObj.knnMatch(descr1, descr2, k=2)
         
+        if len(matches) <= 1:
+            raise ValueError(f"Not enough matches found for {self.featureDetection}, {self.featureMatching}")
+        
         #if BF matcher
         if self.featureMatching == BRUTE_FORCE_STR:
             #match descriptions
@@ -76,10 +79,10 @@ class ObjectDetection:
                 if m.distance < 0.7*n.distance:
                     matchesMask[i]=[1,0]
             
-            draw_params = dict(matchColor = (0,255,0),
-                   singlePointColor = (255,0,0),
-                   matchesMask = matchesMask,
-                   flags = cv.DrawMatchesFlags_DEFAULT)
+            draw_params = dict(
+                matchesMask = matchesMask,
+                flags = 2
+            )
             
             return cv.drawMatchesKnn(img1, kp1, img2, kp2, matches, None, **draw_params)
         else:
@@ -140,20 +143,21 @@ class ObjectDetection:
             
             #if float feature detection
             if self.featureDetection in [SIFT_STR, SURF_STR]:
-                # FLANN parameters
+                # float FLANN index parameters
                 FLANN_INDEX_KDTREE = 1
                 index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-                search_params = dict(checks=50)   # or pass empty dictionary
             #if binary feature detection
             elif self.featureDetection in [ORB_STR, BRISK_STR]:
+                #binary FLANN index params
                 FLANN_INDEX_LSH = 6
                 index_params= dict(algorithm = FLANN_INDEX_LSH,
                                 table_number = 6, # 12
                                 key_size = 12,     # 20
                                 multi_probe_level = 1) #2
-                search_params = dict()
             else:
                 raise ValueError(f"Don't know how to use flann matching with the feature detection method {self.featureDetection}.")
+                
+            search_params = dict()
                 
             matchingObj = cv.FlannBasedMatcher(index_params, search_params)
             
@@ -168,6 +172,8 @@ class ObjectDetection:
                 imgsArr[0].kp, 
                 imgsArr[j].kp
             )
+            
+            imgsArr[j].img = mv_functs.writeText(imgsArr[j].img, f"{self.featureDetection}, {self.featureMatching}")
             
             #display image w/ matches draw on 
             mv_functs.showImage(imgsArr[j].img)
@@ -185,10 +191,10 @@ if __name__ == "__main__":
     odSIFTBruteforce = ObjectDetection(featureDetection=BRISK_STR, featureMatching=BRUTE_FORCE_STR)
     odSIFTBruteforce.run(resizeImagesBy)
     
-    odSIFTBruteforce = ObjectDetection(featureDetection=ORB_STR, featureMatching=FLANN_STR)
+    odSIFTBruteforce = ObjectDetection(featureDetection=SIFT_STR, featureMatching=FLANN_STR)
     odSIFTBruteforce.run(resizeImagesBy)
     
-    odSIFTBruteforce = ObjectDetection(featureDetection=SIFT_STR, featureMatching=FLANN_STR)
+    odSIFTBruteforce = ObjectDetection(featureDetection=ORB_STR, featureMatching=FLANN_STR)
     odSIFTBruteforce.run(resizeImagesBy)
     
     odSIFTBruteforce = ObjectDetection(featureDetection=BRISK_STR, featureMatching=FLANN_STR)
