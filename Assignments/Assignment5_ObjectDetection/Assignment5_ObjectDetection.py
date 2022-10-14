@@ -171,16 +171,19 @@ class ObjectDetection:
                 imgsArr[j].kp
             )
             #use detection + matching to create title
-            titleStr = f"{self.featureDetection}, {self.featureMatching}"
-            #write title on image
-            imgsArr[j].img = mv_functs.writeText(imgsArr[j].img, titleStr)
+            titleStr = f"img {0} vs {j} {self.featureDetection}, {self.featureMatching}"
+            #write title on bottom of image
+            imgsArr[j].img = mv_functs.writeText(imgsArr[j].img, titleStr, origin=(50,380), thickness=1)
+            
             #display image w/ matches draw on 
             mv_functs.showImage(imgsArr[j].img)
             
             #save image if desired
             if(saveImages):
                 #save image as pyramid title
-                mv_functs.saveImage(imgsArr[j].img, newPicName="Pyramid_" + titleStr)
+                savedImageName = "Pyramid " + titleStr
+                mv_functs.saveImage(imgsArr[j].img, newPicName=savedImageName)
+                #cv.imwrite(savedImageName, imgsArr[j].img ) 
 
 if __name__ == "__main__":
     
@@ -198,9 +201,9 @@ if __name__ == "__main__":
     
     od = ObjectDetection(featureDetection=SIFT_STR, featureMatching=FLANN_STR)
     od.run(resizeImagesBy, saveImages)
-    
+ 
     od = ObjectDetection(featureDetection=ORB_STR, featureMatching=FLANN_STR)
-    od.run(resizeImagesBy), saveImages
+    od.run(resizeImagesBy, saveImages)
     
     od = ObjectDetection(featureDetection=BRISK_STR, featureMatching=FLANN_STR)
     od.run(resizeImagesBy, saveImages)
