@@ -54,21 +54,37 @@ class ObjectDetection:
         if len(descr2) == 0:
             raise ValueError("MatchFinder 2nd descriptor empty")
         
+        #find the matches using KNN of matching obj
+        matches = matchingObj.knnMatch(descr1, descr2, k=2)
+        
         #if BF matcher
         if self.featureMatching == BRUTE_FORCE_STR:
             #match descriptions
             matches = matchingObj.match(descr1, descr2)
+            
+            #sort matches by distance
+            matches = sorted(matches, key=lambda x:x.distance)
+            #Draw first 20 closest matches (could also use KNN)
+            return cv.drawMatches(img1, kp1, img2, kp2, matches[0:20], flags=2, outImg=None)
+            
         #If FLANN matcher
         elif self.featureMatching == FLANN_STR:
-            matches = matchingObj.knnMatch(descr1, descr2, k=2)
+            # Need to draw only good matches, so create a mask
+            matchesMask = [[0,0] for i in range(len(matches))]
+            # ratio test as per Lowe's paper
+            for i,(m,n) in enumerate(matches):
+                if m.distance < 0.7*n.distance:
+                    matchesMask[i]=[1,0]
+            
+            draw_params = dict(matchColor = (0,255,0),
+                   singlePointColor = (255,0,0),
+                   matchesMask = matchesMask,
+                   flags = cv.DrawMatchesFlags_DEFAULT)
+            
+            return cv.drawMatchesKnn(img1, kp1, img2, kp2, matches, None, **draw_params)
         else:
             raise ValueError(f"The feature matching method {self.featureMatching} is not implemented.")
-        
-        #sort matches by distance
-        matches = sorted(matches, key=lambda x:x.distance)
-        #Draw first 20 closest matches (could also use KNN)
-        return cv.drawMatches(img1, kp1, img2, kp2, matches[0:20], flags=2, outImg=None)
-        
+    
     def run(self, resizeBy: float = 0.1) -> None:
         #read in greyscaled 3 images of same obj in diff pos's/orientations
         img1 = cv.imread("img1.jpg", cv.IMREAD_GRAYSCALE)
@@ -122,11 +138,23 @@ class ObjectDetection:
             #create flann descriptor matcher
             #matchingObj = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
             
-            # FLANN parameters
-            FLANN_INDEX_KDTREE = 1
-            index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
-            search_params = dict(checks=50)   # or pass empty dictionary
-            
+            #if float feature detection
+            if self.featureDetection in [SIFT_STR, SURF_STR]:
+                # FLANN parameters
+                FLANN_INDEX_KDTREE = 1
+                index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+                search_params = dict(checks=50)   # or pass empty dictionary
+            #if binary feature detection
+            elif self.featureDetection in [ORB_STR, BRISK_STR]:
+                FLANN_INDEX_LSH = 6
+                index_params= dict(algorithm = FLANN_INDEX_LSH,
+                                table_number = 6, # 12
+                                key_size = 12,     # 20
+                                multi_probe_level = 1) #2
+                search_params = dict()
+            else:
+                raise ValueError(f"Don't know how to use flann matching with the feature detection method {self.featureDetection}.")
+                
             matchingObj = cv.FlannBasedMatcher(index_params, search_params)
             
         for j in range(1, imgsArrLen):
@@ -157,10 +185,10 @@ if __name__ == "__main__":
     odSIFTBruteforce = ObjectDetection(featureDetection=BRISK_STR, featureMatching=BRUTE_FORCE_STR)
     odSIFTBruteforce.run(resizeImagesBy)
     
-    odSIFTBruteforce = ObjectDetection(featureDetection=SIFT_STR, featureMatching=FLANN_STR)
+    odSIFTBruteforce = ObjectDetection(featureDetection=ORB_STR, featureMatching=FLANN_STR)
     odSIFTBruteforce.run(resizeImagesBy)
     
-    odSIFTBruteforce = ObjectDetection(featureDetection=ORB_STR, featureMatching=FLANN_STR)
+    odSIFTBruteforce = ObjectDetection(featureDetection=SIFT_STR, featureMatching=FLANN_STR)
     odSIFTBruteforce.run(resizeImagesBy)
     
     odSIFTBruteforce = ObjectDetection(featureDetection=BRISK_STR, featureMatching=FLANN_STR)
